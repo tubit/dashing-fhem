@@ -1,0 +1,24 @@
+<script type='text/javascript'>
+  $(function() {
+    Dashing.widget_base_dimensions = [342, 332]
+    Dashing.numColumns = 5
+  });
+</script>
+
+<% content_for :title do %>My Nagios dashboard<% end %>
+<div class="gridster">
+  <ul>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-view="Clock"></div>
+      <i class="icon-time icon-background"></i>
+    </li>
+
+    <li data-row="1" data-col="2" data-sizex="1" data-sizey="1">
+      <div data-id="bad2_dachfenster" data-view="Text" data-title="Dachfenster Bad" style="background-color:#96bf48;"></div>
+    </li>
+
+    <li data-row="3" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="ki_heizung1" data-view="Graph" data-title="Kinderzimmer" style="background-color:#47bbb3;"></div>
+    </li>
+  </ul>
+</div>
