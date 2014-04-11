@@ -1,16 +1,29 @@
+# -*- encoding : utf-8 -*-\n\n
+
 require 'net/http'
 require 'uri'
 require 'json'
 
 uri = URI.parse("http://fhem:8083/fhem?cmd=jsonlist%20CUL_HM&XHR=1")
 
-points = Hash.new()
-last_x = Hash.new()
-points[:kinderzimmer] = []
-(1..10).each do |i|
-  points[:kinderzimmer] << { x: i, y: 0 }
-end
-last_x[:kinderzimmer] = points[:kinderzimmer].last[:x]
+heating = {
+  'wz_Heizung1_Weather' => {
+    :last     => 0,
+    :current  => 0,
+  },
+  'wz_Heizung2_Weather' => {
+    :last     => 0,
+    :current  => 0,
+  },
+  'ki_Heizung1_Weather' => {
+    :last     => 0,
+    :current  => 0,
+  },
+  'sz_Heizung1_Weather' => {
+    :last     => 0,
+    :current  => 0,
+  }
+}
 
 
 SCHEDULER.every '3s' do
@@ -23,18 +36,22 @@ SCHEDULER.every '3s' do
     when 'bad2_dachfenster' then
       puts "Badezimmerfenster: #{result[:state]}"
       if result[:state] == 'open'
-        send_event('bad2_dachfenster', text: "Offen")
+        send_event('bad2_dachfenster', text: "Offen", status: 'warning')
       else
         send_event('bad2_dachfenster', text: "Geschlossen")
       end
-    when 'ki_Heizung1_Weather' then
-      points[:kinderzimmer].shift
-      last_x[:kinderzimmer] += 1
-      points[:kinderzimmer] << { x: last_x[:kinderzimmer], y: result[:state] }
+    else 
+      if heating.has_key?(result[:name])
+        puts "#{result[:name]} is #{result[:state]} C"
 
-      puts "Kinderzimmer ist #{result[:state]} C"
-      send_event('ki_heizung1', points: points[:kinderzimmer])
+        what = result[:name]
+        heating[what][:last] = heating[what][:current]
+        heating[what][:current] = result[:state]
 
+        send_event(result[:name], current: heating[what][:current], last: heating[what][:last], suffix: "˚C")
+
+        p heating
+      end
     end
   end
 
