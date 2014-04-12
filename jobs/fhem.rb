@@ -53,9 +53,9 @@ SCHEDULER.every '15s' do
     when 'bad2_dachfenster' then
       puts "Badezimmerfenster: #{result[:state]}" if debug
       if result[:state] == 'open'
-        send_event('bad2_dachfenster', text: "Offen", status: 'warning')
+        send_event('bad2_dachfenster', text: 'Offen', status: 'warning')
       else
-        send_event('bad2_dachfenster', text: "Geschlossen")
+        send_event('bad2_dachfenster', text: 'Geschlossen', status: 'ok')
       end
     else 
       if heating.has_key?(result[:name])
@@ -71,9 +71,9 @@ SCHEDULER.every '15s' do
         heating[what][:last_humidity] = heating[what][:humidity].to_i - 10 if heating[what][:humidity]
         heating[what][:humidity] = states['H:'] || false
 
-        send_event(result[:name], current: heating[what][:current], last: heating[what][:last], suffix: "˚C")
+        send_event(result[:name], current: heating[what][:current], last: heating[what][:last], suffix: '˚C')
         send_event("#{result[:name]}_valve", value: heating[what][:valve]) if heating[what][:valve]
-        send_event("#{result[:name]}_humidity", current: heating[what][:humidity], last: heating[what][:last_humidity], suffix: "%") if heating[what][:humidity]
+        send_event("#{result[:name]}_humidity", current: heating[what][:humidity], last: heating[what][:last_humidity], suffix: '%') if heating[what][:humidity]
 
         p heating if debug
       end
