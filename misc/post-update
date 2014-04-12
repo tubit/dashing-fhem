@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+DESTINATION=/home/pi/fhemdash
+
+cd $DESTINATION || exit
+
+unset GIT_DIR
+git pull origin master
+
+echo "restarting dashing"
+dashing stop
+sleep 10s
+dashing start -d
+
+exec git update-server-info
+
