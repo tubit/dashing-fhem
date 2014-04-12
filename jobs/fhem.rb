@@ -42,6 +42,7 @@ heating = {
   }
 }
 
+windows = ['wz_Balkontuer', 'ku_Balkontuer','bad2_dachfenster' ]
 
 SCHEDULER.every '15s' do
   response = Net::HTTP.get_response(uri)
@@ -49,33 +50,32 @@ SCHEDULER.every '15s' do
   results = JSON.parse(response.body, symbolize_names: true)[:Results]
 
   results.each do |result|
-    case result[:name]
-    when 'bad2_dachfenster' then
-      puts "Badezimmerfenster: #{result[:state]}" if debug
+    if heating.has_key?(result[:name])
+      puts "#{result[:name]} is #{result[:state]}" if debug
+
+      what = result[:name]
+      states = Hash[result[:state].split(/ /).each_slice(2).to_a]
+
+      heating[what][:last] = heating[what][:current]
+      heating[what][:current] = states['T:']
+      heating[what][:valve] = states['valve:'] || false
+      heating[what][:desired] = states['desired:'] || false
+      heating[what][:last_humidity] = heating[what][:humidity].to_i - 10 if heating[what][:humidity]
+      heating[what][:humidity] = states['H:'] || false
+
+      send_event(result[:name], current: heating[what][:current], last: heating[what][:last], suffix: '˚C')
+      send_event("#{result[:name]}_valve", value: heating[what][:valve]) if heating[what][:valve]
+      send_event("#{result[:name]}_humidity", current: heating[what][:humidity], last: heating[what][:last_humidity], suffix: '%') if heating[what][:humidity]
+
+      p heating if debug
+    elsif windows.include?(result[:name])
+      puts "#{result[:name]} is: #{result[:state]}" if debug
       if result[:state] == 'open'
-        send_event('bad2_dachfenster', text: 'Offen', status: 'warning')
+        send_event(result[:name], text: 'Offen', status: 'warning')
+      elsif result[:state] == 'tilted'
+        send_event(result[:name], text: 'Gekippt', status: 'danger')
       else
-        send_event('bad2_dachfenster', text: 'Geschlossen', status: 'ok')
-      end
-    else 
-      if heating.has_key?(result[:name])
-        puts "#{result[:name]} is #{result[:state]}" if debug
-
-        what = result[:name]
-        states = Hash[result[:state].split(/ /).each_slice(2).to_a]
-
-        heating[what][:last] = heating[what][:current]
-        heating[what][:current] = states['T:']
-        heating[what][:valve] = states['valve:'] || false
-        heating[what][:desired] = states['desired:'] || false
-        heating[what][:last_humidity] = heating[what][:humidity].to_i - 10 if heating[what][:humidity]
-        heating[what][:humidity] = states['H:'] || false
-
-        send_event(result[:name], current: heating[what][:current], last: heating[what][:last], suffix: '˚C')
-        send_event("#{result[:name]}_valve", value: heating[what][:valve]) if heating[what][:valve]
-        send_event("#{result[:name]}_humidity", current: heating[what][:humidity], last: heating[what][:last_humidity], suffix: '%') if heating[what][:humidity]
-
-        p heating if debug
+        send_event(result[:name], text: 'Geschlossen', status: 'ok')
       end
     end
   end
