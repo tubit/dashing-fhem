@@ -60,7 +60,7 @@ SCHEDULER.every '15s' do
       heating[what][:current] = states['T:']
       heating[what][:valve] = states['valve:'] || false
       heating[what][:desired] = states['desired:'] || false
-      heating[what][:last_humidity] = heating[what][:humidity].to_i - 10 if heating[what][:humidity]
+      heating[what][:last_humidity] = heating[what][:humidity].to_i if heating[what][:humidity]
       heating[what][:humidity] = states['H:'] || false
 
       send_event(result[:name], current: heating[what][:current], last: heating[what][:last], suffix: '˚C')
