@@ -42,7 +42,7 @@ heating = {
   }
 }
 
-windows = ['wz_Balkontuer', 'ku_Balkontuer','bad2_dachfenster' ]
+windows = ['wz_Balkontuer', 'ku_Balkontuer', 'bad2_dachfenster']
 
 SCHEDULER.every '15s' do
   response = Net::HTTP.get_response(uri)
