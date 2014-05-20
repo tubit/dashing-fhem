@@ -23,11 +23,26 @@ To create your very own FHEM dashboard, you need to change almost everything ins
 As you can assume, this dashboard relies on _your_ FHEM configuration, _your_ components and names...
 
 Maybe it's the best option to enable Jsonlist (not Jsonlist2) in your FHEM installation and just browse around
-the output of [http://fhem:8083/fhem?cmd=jsonlist%20CUL_HM&XHR=1](http://fhem:8083/fhem?cmd=jsonlist%20CUL_HM&XHR=1).
+the output of [http://fhem:8083/fhem?cmd=jsonlist%20CUL_HM&XHR=1](http://fhem:8083/fhem?cmd=jsonlist%20CUL_HM&XHR=1) (Hint: this need to be _your_ FHEM installation URL)
 
-For my dashboard I'm looking for heating information and window states. I defined all interesting windows
-inside an `windows`-array and all heating thermostates in a `heating`-hash. For thermostates the
+For my dashboard I'm looking for heating information (temperature, humidity and valve position) and window states.
+All interesting windows are defined inside an `windows`-array and all heating thermostates in a `heating`-hash. For thermostates the
 last value is saved to the hash, so the number widgets display can display increase or decrease of the room temperatures.
+
+In general: Look for your device names in the json output, then parse and display the value. Keep in mind that FHEM
+sometimes uses strange state values (e.g. instead of 100% it is 'on' for a dimmer switch, or 'closed' for a blind actuator).
+
+```
+results.each do |result|
+  if result[:name] == DEVICE_NAME
+    send_event(THE_WIDGET_NAME, current: result[:value])
+  elsif ...
+      ...
+  else
+      ...
+  end
+end
+```
 
 Happy hacking. :-)
 
